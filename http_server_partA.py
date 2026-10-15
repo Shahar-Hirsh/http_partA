@@ -16,7 +16,7 @@ def getURL(answer):
     return url[1:]
 
 server_sock = socket.socket()
-server_sock.bind(("0.0.0.0", 80)) #'8080'
+server_sock.bind(("0.0.0.0", 8080)) #'8080'
 server_sock.listen(3)
 
 while True:
@@ -30,16 +30,25 @@ while True:
     else:
         print(data)
         url = getURL(data)
+        print("URL:", url)
+        print("File exists:", os.path.isfile(url))
         if url:
             if os.path.isfile(url):
                 with open(url, "rb") as f:
-                    data = f.read().decode()
+                    file_data = f.read()
 
-                ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(url))}\r\n\r\n{url}"
-                data_info = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(data))}\r\n\r\n{data}"
+                #ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(url.split('/')[-1]))}\r\n\r\n{url.split('/')[-1]}"
+                data_info = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(file_data))}\r\n\r\n"
+                try:
+                    #client_soc.send(ans.encode())
+                    client_soc.send(data_info.encode())
+                    client_soc.send(file_data)
+                except Exception as e:
+                    print(f"error in send {str(e)}")
+            else:
+                ans = f"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
                 try:
                     client_soc.send(ans.encode())
-                    client_soc.send(data_info.encode())
                 except Exception as e:
                     print(f"error in send {str(e)}")
 
