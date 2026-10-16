@@ -13,12 +13,31 @@ def getURL(answer):
     params = line1.split(' ')
     if len(params) == 3 and params[0] == 'GET' and params[2] == "HTTP/1.1":
         url = params[1]
+    if url == "/":
+        url = "/C:/Users/User/Desktop/computer/Cyber/http_partA/index.html" #index.html path
+
+
     return url[1:]
+
+def send_answer(answer):
+    """
+    sending the short answers
+    :param answer: the answer to send
+    :type answer: str
+    :return: none
+    """
+    try:
+        client_soc.send(answer.encode())
+    except Exception as e:
+        print(f"error in send {str(e)}")
+
 
 server_sock = socket.socket()
 server_sock.bind(("0.0.0.0", 8080)) #'8080'
 server_sock.listen(3)
 
+moved_files = {"horse.jpg": "C:/Users/User/Desktop/computer/Cyber/http_partA/images/horse2.jpg"}
+no_access = ["C:/Users/User/Desktop/computer/Cyber/http_partA/images/me.png"]
 while True:
     client_soc, addr = server_sock.accept()
     print(f"{addr[0]} - connected")
@@ -30,10 +49,18 @@ while True:
     else:
         print(data)
         url = getURL(data)
-        print("URL:", url)
-        print("File exists:", os.path.isfile(url))
+
         if url:
-            if os.path.isfile(url):
+            if url in no_access:
+                ans = "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n"
+                send_answer(ans)
+            elif url in moved_files:
+                ans = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + moved_files[url] + "\r\nContent-Length: 0\r\n\r\n"
+                send_answer(ans)
+            elif url.lower() == "server":
+                ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
+                send_answer(ans)
+            elif os.path.isfile(url):
                 with open(url, "rb") as f:
                     file_data = f.read()
 
@@ -47,10 +74,7 @@ while True:
                     print(f"error in send {str(e)}")
             else:
                 ans = f"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
-                try:
-                    client_soc.send(ans.encode())
-                except Exception as e:
-                    print(f"error in send {str(e)}")
+                send_answer(ans)
 
     print(f"{addr[0]} - disconnected")
     client_soc.close()
