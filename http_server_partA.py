@@ -36,8 +36,8 @@ server_sock = socket.socket()
 server_sock.bind(("0.0.0.0", 8080)) #'8080'
 server_sock.listen(3)
 
-moved_files = {"horse.jpg": "C:/Users/User/Desktop/computer/Cyber/http_partA/images/horse2.jpg"}
-no_access = ["C:/Users/User/Desktop/computer/Cyber/http_partA/images/me.png"]
+moved_files = {"horse.jpg": "C:/Users/User/Desktop/computer/Cyber/http_partA/horse2.jpg"}
+no_access = ["C:/Users/User/Desktop/computer/Cyber/http_partA/me.png"]
 while True:
     client_soc, addr = server_sock.accept()
     print(f"{addr[0]} - connected")
