@@ -14,7 +14,7 @@ def getURL(answer):
     if len(params) == 3 and params[0] == 'GET' and params[2] == "HTTP/1.1":
         url = params[1]
     if url == "/":
-        url = "/C:/Users/User/Desktop/computer/Cyber/http_partA/index.html" #index.html path
+        url = "/index.html" #index.html path
 
 
     return url[1:]
@@ -33,7 +33,7 @@ def send_answer(answer):
 
 
 server_sock = socket.socket()
-server_sock.bind(("0.0.0.0", 8080)) #'8080'
+server_sock.bind(("0.0.0.0", 80)) #'8080'
 server_sock.listen(3)
 
 moved_files = {"horse.jpg": "/horse2.jpg"}
@@ -59,6 +59,9 @@ while True:
                 send_answer(ans)
             elif url.lower() == "server":
                 ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
+                send_answer(ans)
+            elif url.lower()[:] == "calculate-next":
+                ans = "HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\n5"
                 send_answer(ans)
             elif os.path.isfile(url):
                 with open(url, "rb") as f:
