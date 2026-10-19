@@ -33,7 +33,7 @@ def send_answer(answer):
 
 
 server_sock = socket.socket()
-server_sock.bind(("0.0.0.0", 80)) #'8080'
+server_sock.bind(("0.0.0.0", 8080)) #'8080'
 server_sock.listen(3)
 
 moved_files = {"horse.jpg": "/horse2.jpg"}
@@ -60,9 +60,6 @@ while True:
             elif url.lower() == "server":
                 ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
                 send_answer(ans)
-            elif url.lower()[:] == "calculate-next":
-                ans = "HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\n5"
-                send_answer(ans)
             elif os.path.isfile(url):
                 with open(url, "rb") as f:
                     file_data = f.read()
@@ -75,6 +72,17 @@ while True:
                     client_soc.send(file_data)
                 except Exception as e:
                     print(f"error in send {str(e)}")
+
+            elif url.lower().startswith("calculate-next"):
+                if url[len("calculate-next"):len("calculate-next")+len("?num=")] == "?num=":
+                    try:
+                        num = int(url[len("calculate-next?num="):])+1
+                        ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
+                    except ValueError:
+                        ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len('you need to enter a number')}\r\n\r\nyou need to enter a number"
+                else:
+                    ans = f"HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\n5"
+                send_answer(ans)
             else:
                 ans = f"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
                 send_answer(ans)
