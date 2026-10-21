@@ -1,7 +1,6 @@
 import os
 import socket
 
-
 def getURL(answer):
     """
     return the url from the client request
@@ -46,46 +45,67 @@ while True:
         data = client_soc.recv(1024).decode()
     except Exception as e:
         print(f"error in receive {str(e)}")
-    else:
-        print(data)
-        url = getURL(data)
+        break
 
-        if url:
-            if url in no_access:
-                ans = "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n"
-                send_answer(ans)
-            elif url in moved_files:
-                ans = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + moved_files[url] + "\r\nContent-Length: 0\r\n\r\n"
-                send_answer(ans)
-            elif url.lower() == "server":
-                ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
-                send_answer(ans)
-            elif os.path.isfile(url):
-                with open(url, "rb") as f:
-                    file_data = f.read()
+    print(data)
+    url = getURL(data)
 
-                #ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(url.split('/')[-1]))}\r\n\r\n{url.split('/')[-1]}"
-                data_info = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(file_data))}\r\n\r\n"
+    if url:
+        if url in no_access:
+            ans = "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n"
+            send_answer(ans)
+        elif url in moved_files:
+            ans = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + moved_files[url] + "\r\nContent-Length: 0\r\n\r\n"
+            send_answer(ans)
+        elif url.lower() == "server":
+            ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
+            send_answer(ans)
+        elif os.path.isfile(url):
+            with open(url, "rb") as f:
+                file_data = f.read()
+
+            #ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(url.split('/')[-1]))}\r\n\r\n{url.split('/')[-1]}"
+            data_info = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(file_data))}\r\n\r\n"
+            try:
+                #client_soc.send(ans.encode())
+                client_soc.send(data_info.encode())
+                client_soc.send(file_data)
+            except Exception as e:
+                print(f"error in send {str(e)}")
+
+        elif url.lower().startswith("calculate-next"):
+            if url[len("calculate-next"):len("calculate-next?num=")] == "?num=":
                 try:
-                    #client_soc.send(ans.encode())
-                    client_soc.send(data_info.encode())
-                    client_soc.send(file_data)
-                except Exception as e:
-                    print(f"error in send {str(e)}")
-
-            elif url.lower().startswith("calculate-next"):
-                if url[len("calculate-next"):len("calculate-next")+len("?num=")] == "?num=":
-                    try:
-                        num = int(url[len("calculate-next?num="):])+1
-                        ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
-                    except ValueError:
-                        ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len('you need to enter a number')}\r\n\r\nyou need to enter a number"
-                else:
-                    ans = f"HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\n5"
-                send_answer(ans)
+                    num = int(url[len("calculate-next?num="):])+1
+                    ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
+                except ValueError:
+                    ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len('you need to enter a number')}\r\n\r\nyou need to enter a number"
             else:
-                ans = f"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
-                send_answer(ans)
+                num = 5
+                ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
+            send_answer(ans)
+
+        elif url.lower().startswith("calculate-area?"):
+            if url.find("height=")<url.find("width="):
+                height = url[url.find("height=")+len("height="):url.find("&")]
+                width = url[url.find("&width=")+len("&width="):]
+            else:
+                width = url[url.find("width=")+len("width="):url.find("&")]
+                height = url[url.find("&height=")+len("&height="):]
+
+            if height.isdigit() and width.isdigit():
+                if int(height) > 0 and int(width) > 0:
+                    area = int(width) * int(height) / 2
+                    ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(area)))}\r\n\r\n{area}"
+                else:
+                    ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {'you need to enter numbers bigger than 0'}\r\n\r\nyou need to enter numbers bigger than 0"
+            else:
+                ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {'you need to enter numbers bigger than 0'}\r\n\r\nyou need to enter numbers bigger than 0"
+
+            send_answer(ans)
+        else:
+            ans = f"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
+            send_answer(ans)
 
     print(f"{addr[0]} - disconnected")
     client_soc.close()
