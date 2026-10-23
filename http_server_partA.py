@@ -36,7 +36,7 @@ server_sock.bind(("0.0.0.0", 8080)) #'8080'
 server_sock.listen(3)
 
 moved_files = {"horse.jpg": "/horse2.jpg"}
-no_access = ["C:/Users/User/Desktop/computer/Cyber/http_partA/me.png"]
+no_access = ["pug.jpg","/pug.jpg"]
 while True:
     client_soc, addr = server_sock.accept()
     print(f"{addr[0]} - connected")
@@ -45,13 +45,15 @@ while True:
         data = client_soc.recv(1024).decode()
     except Exception as e:
         print(f"error in receive {str(e)}")
-        break
+        print(f"{addr[0]} - disconnected")
+        client_soc.close()
+        continue
 
     print(data)
     url = getURL(data)
 
     if url:
-        if url in no_access:
+        if url.split("/")[-1] in no_access:
             ans = "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n"
             send_answer(ans)
         elif url in moved_files:
