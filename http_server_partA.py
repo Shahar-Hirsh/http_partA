@@ -76,15 +76,17 @@ while True:
                 print(f"error in send {str(e)}")
 
         elif url.lower().startswith("calculate-next"):
-            if url[len("calculate-next"):len("calculate-next?num=")] == "?num=":
+            if len(url) == len("calculate-next"):
+                num = 5
+                ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
+            elif url[len("calculate-next"):len("calculate-next?num=")] == "?num=":
                 try:
                     num = int(url[len("calculate-next?num="):])+1
                     ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
                 except ValueError:
                     ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len('you need to enter a number')}\r\n\r\nyou need to enter a number"
             else:
-                num = 5
-                ans = f"HTTP/1.1 200 OK\r\nContent-Length: {str(len(str(num)))}\r\n\r\n{num}"
+                ans = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len('you need to enter a number in num=')}\r\n\r\nyou need to enter a number in num="
             send_answer(ans)
 
         elif url.lower().startswith("calculate-area?"):
