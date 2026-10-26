@@ -1,6 +1,17 @@
 import os
 import socket
 
+def get_type(answer):
+    """
+    return the type of the client request
+    :param answer:
+    :return: the type of the request
+    """
+    type = None
+    line1 = answer.split('\r\n')[0]
+    params = line1.split(' ')
+    if len(params) == 3  and params[2] == "HTTP/1.1":
+
 def getURL(answer):
     """
     return the url from the client request
