@@ -123,11 +123,8 @@ while True:
             elif url.lower() == "server":
                 ans = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"
                 send_answer(ans)
-            elif url.startswith("image?img-name="):
-                img_name = url.split('=')[1]
-                img_path = os.path.join("images", img_name)
-                if os.path.isfile(img_path):
-                    send_long_data(img_path)
+            elif url.startswith("image?img-name=") and os.path.isfile(os.path.join("images", url.split('=')[1])):
+                    send_long_data(os.path.join("images", url.split('=')[1]))
 
             elif os.path.isfile(url):
                 send_long_data(url)
